@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoodCanvas AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12181b;
+    --bg-soft: #1a2226;
+    --panel: #1f2a2e;
+    --panel-line: #35454b;
+    --ink: #f4efe8;
+    --ink-dim: #a7b4b9;
+    --brand: #ff6b57;
+    --joy: #ffcb47;
+    --calm: #4fd8a8;
+    --blue: #4da8e8;
+    --coral: #ff8a5b;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    font-family:'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 56px 20px 90px;
+  }
+
+  .eyebrow{
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin: 0 0 10px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    margin: 0;
+    line-height: 1;
+    color: var(--joy);
+  }
+
+  .tagline{
+    color: var(--ink-dim);
+    font-size: 16px;
+    max-width: 420px;
+    text-align: center;
+    margin: 14px 0 40px;
+  }
+
+  .upload-box{
+    width: min(440px, 90vw);
+    background: var(--panel);
+    border: 1.5px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 36px 30px;
+    text-align: center;
+  }
+
+  .drop-hint{
+    font-size: 15px;
+    color: var(--ink);
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+
+  .drop-subhint{
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin: 0 0 22px;
+  }
+
+  #preview-wrap{
+    display:none;
+    margin: 0 auto 20px;
+  }
+
+  #preview-wrap img{
+    max-width: 160px;
+    max-height: 160px;
+    border-radius: 8px;
+    border: 3px solid var(--bg-soft);
+  }
+
+  input[type="file"]{
+    display:none;
+  }
+
+  .file-label{
+    display:inline-block;
+    padding: 10px 18px;
+    border: 1.5px solid var(--panel-line);
+    border-radius: 8px;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .filename{
+    display:block;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 10px;
+    min-height: 16px;
+  }
+
+  button[type="submit"]{
+    margin-top: 22px;
+    background: var(--brand);
+    color: #14181c;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  button[type="submit"]:disabled{
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  .fineprint{
+    margin-top: 14px;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+  }
+
+  /* ---- results ---- */
+  .result{
+    margin-top: 46px;
+    width: min(460px, 92vw);
+  }
+
+  .placard{
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 28px;
+    border: 1px solid var(--panel-line);
+  }
+
+  .result img{
+    display:block;
+    max-width: 100%;
+    max-height: 280px;
+    margin: 0 auto 20px;
+    border-radius: 8px;
+    border: 4px solid var(--bg-soft);
+  }
+
+  .mood-row{
+    text-align:center;
+    margin-bottom: 6px;
+  }
+
+  .mood-eyebrow{
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin: 0 0 6px;
+  }
+
+  .prediction{
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 34px;
+    margin: 0;
+    color: var(--joy);
+  }
+
+  .quip{
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    margin: 8px 0 22px;
+    font-style: italic;
+  }
+
+  .conf-label{
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin: 0 0 20px;
+    text-align:center;
+  }
+
+  .bars{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .bar-row{
+    display:grid;
+    grid-template-columns: 84px 1fr 46px;
+    align-items:center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .bar-name{
+    color: var(--ink);
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-track{
+    background: var(--bg-soft);
+    border-radius: 999px;
+    height: 10px;
+    overflow:hidden;
+  }
+
+  .bar-fill{
+    height: 100%;
+    border-radius: 999px;
+  }
+
+  .bar-score{
+    text-align:right;
+    color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  footer{
+    margin-top: 60px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+  <p class="eyebrow">an extremely serious AI product</p>
+  <h1>MoodCanvas AI</h1>
+  <p class="tagline">Upload a painting, a doodle, or your own face. It'll size up the vibe — accuracy allegedly included.</p>
+
+  <div class="upload-box">
+    <form method="POST" enctype="multipart/form-data" id="mood-form">
+      {% csrf_token %}
+
+      <p class="drop-hint">Upload an image</p>
+      <p class="drop-subhint">we don't judge your art degree</p>
+
+      <div id="preview-wrap">
+        <img id="preview-img" src="" alt="Selected image preview">
+      </div>
+
+      <label class="file-label" for="image-input">Choose an image</label>
+      <input type="file" name="image" id="image-input" accept="image/*" required>
+      <span class="filename" id="filename-display">No file chosen yet.</span>
+
+      <br>
+      <button type="submit" id="submit-btn">Analyze the vibes</button>
+      <p class="fineprint">No emotional damage guaranteed. Results may vary by lighting, mood, and Mercury retrograde.</p>
+    </form>
+  </div>
+
+  {% if prediction %}
+  <div class="result">
+    <div class="placard">
+      <img src="{{ image_url }}" alt="Uploaded image">
+
+      <div class="mood-row">
+        <p class="mood-eyebrow">the verdict is in</p>
+        <p class="prediction" id="prediction-text">{{ prediction|upper }}</p>
+        <p class="quip" id="mood-quip">Loading unsolicited commentary...</p>
+      </div>
+
+      <p class="conf-label">Confidence: <strong>{{ confidence }}%</strong> (basically a fortune teller)</p>
+
+      <div class="bars">
+        {% for class_name, score in all_scores.items %}
+        <div class="bar-row">
+          <span class="bar-name">{{ class_name }}</span>
+          <div class="bar-track">
+            <div class="bar-fill" data-score="{{ score }}"></div>
+          </div>
+          <span class="bar-score">{{ score }}%</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <footer>Powered by pixels, probability, and a healthy disregard for fine art critique.</footer>
+
+<script>
+  // ---- file select + preview (no animation, just shows the picked image) ----
+  const input = document.getElementById('image-input');
+  const filenameDisplay = document.getElementById('filename-display');
+  const previewWrap = document.getElementById('preview-wrap');
+  const previewImg = document.getElementById('preview-img');
+  const form = document.getElementById('mood-form');
+  const submitBtn = document.getElementById('submit-btn');
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if(!file) return;
+    filenameDisplay.textContent = file.name.length > 28
+      ? file.name.slice(0,25) + '...'
+      : file.name;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      previewWrap.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  form.addEventListener('submit', () => {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Judging your art...';
+  });
+
+  // ---- set score bar widths and colors directly, no transition ----
+  const moodColors = {
+    happy: 'var(--joy)', joy: 'var(--joy)',
+    calm: 'var(--calm)', neutral: 'var(--calm)',
+    sad: 'var(--blue)', melancholy: 'var(--blue)',
+    angry: 'var(--coral)', anger: 'var(--coral)'
+  };
+
+  document.querySelectorAll('.bar-fill').forEach(bar => {
+    const score = parseFloat(bar.dataset.score) || 0;
+    const rowName = bar.closest('.bar-row').querySelector('.bar-name').textContent.trim().toLowerCase();
+    bar.style.background = moodColors[rowName] || 'var(--brand)';
+    bar.style.width = score + '%';
+  });
+
+  // ---- funny quip based on predicted mood ----
+  const quips = {
+    happy: "Radiating certified main-character energy.",
+    joy: "Radiating certified main-character energy.",
+    sad: "Big 'staring out a rainy window' energy.",
+    melancholy: "Big 'staring out a rainy window' energy.",
+    angry: "Somebody skipped their coffee today.",
+    anger: "Somebody skipped their coffee today.",
+    calm: "Suspiciously zen. Please share your secrets.",
+    neutral: "Poker face: activated.",
+    surprised: "Plot twist detected.",
+    fear: "The audacity of that jumpscare.",
+    disgust: "Someone stepped on a Lego, emotionally speaking."
+  };
+
+  const predEl = document.getElementById('prediction-text');
+  const quipEl = document.getElementById('mood-quip');
+  if(predEl && quipEl){
+    const mood = predEl.textContent.trim().toLowerCase();
+    quipEl.textContent = quips[mood] || "The AI has spoken. We're just as confused as you.";
+  }
+</script>
+
+</body>
+</html>
