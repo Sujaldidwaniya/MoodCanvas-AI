@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.log
+
+# Virtual environment
+env/
+venv/
+.venv/
+
+# Django
+webapp/db.sqlite3
+webapp/media/
+webapp/staticfiles/
+
+# Environment variables
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# Large/local data
+media.zip
+Dataset/
