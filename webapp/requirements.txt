@@ -63,3 +63,4 @@ pandas
 matplotlib
 scikit-learn
 seaborn
+gunicorn
